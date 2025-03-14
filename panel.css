@@ -1,0 +1,111 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f7f6;
+    color: #333;
+}
+
+.panel-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.panel-header {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.panel-header h1 {
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.panel-header p {
+    color: #777;
+}
+
+.controls {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    color: white;
+    background-color: #3498db;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #2980b9;
+}
+
+.button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.5);
+}
+
+.button.primary {
+    background-color: #2ecc71;
+}
+
+.button.primary:hover {
+    background-color: #27ae60;
+}
+
+.checkbox-group {
+    display: flex;
+    gap: 15px;
+    margin-left: 20px;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    color: #555;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+.file-info {
+    margin-bottom: 15px;
+    color: #555;
+}
+
+.file-list-container {
+    flex-grow: 1;
+    overflow: hidden; /* Ensure the container respects its boundaries */
+}
+
+.file-list {
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 14px;
+    line-height: 1.6;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.file-list div {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    color: #444;
+    word-break: break-all; /* Prevent long URLs from breaking the layout */
+}
+
+.file-list div:last-child {
+    border-bottom: none;
+}

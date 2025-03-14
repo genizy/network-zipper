@@ -1,0 +1,1 @@
+chrome.devtools.panels.create("Network Zipper", "", "panel.html", function(panel) {});

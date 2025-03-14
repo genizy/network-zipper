@@ -1,0 +1,15 @@
+{
+    "manifest_version": 3,
+    "name": "Network Zipper",
+    "version": "0.1",
+    "permissions": ["downloads", "storage"],
+    "devtools_page": "devtools.html",
+    "description": "Extension that lets you download the network tab in a zip file.",
+    "homepage_url": "https://github.com/genizy/network-zipper",
+    "icons": {
+        "16": "icon/icon16.png",
+        "32": "icon/icon32.png",
+        "48": "icon/icon48.png",
+        "128": "icon/icon128.png"
+    }
+  }
