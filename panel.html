@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <title>Network Zipper - Panel</title>
     <link rel="stylesheet" href="panel.css">
-    <script src="lib/jszip.min.js"></script>
-    <script src="panel.js"></script>
 </head>
 <body>
     <div class="panel-container">
@@ -27,6 +25,9 @@
                 </label>
             </div>
         </section>
+        <section class="utility">
+            <button id="refresh" class="button">Refresh Files</button>
+        </section>
 
         <section class="file-info">
             <span>Files: <span id="fileCount">0</span></span>
@@ -35,6 +36,22 @@
         <section class="file-list-container">
             <div id="fileList" class="file-list"></div>
         </section>
+
+        <div class="theme-dropdown">
+            <button class="theme-dropdown-button">Select Theme</button>
+            <div class="theme-dropdown-content">
+                <a href="#" data-theme="light-theme">Light</a>
+                <a href="#" data-theme="dark-theme">Dark</a>
+                <a href="#" data-theme="midnight-theme">Midnight</a>
+                <a href="#" data-theme="cyberpunk-theme">Cyberpunk</a>
+                <a href="#" data-theme="hacker-theme">Hacker</a>
+                <a href="#" data-theme="sunset-theme">Sunset</a>
+                <a href="#" data-theme="ocean-theme">Ocean</a>
+                <a href="#" data-theme="retro-arcade-theme">Retro Arcade</a>
+            </div>            
+        </div>
     </div>
+    <script src="lib/jszip.min.js"></script>
+    <script src="panel.js"></script>
 </body>
 </html>

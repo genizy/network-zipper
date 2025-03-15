@@ -1,8 +1,31 @@
 document.addEventListener("DOMContentLoaded", function() {
     const fileListDiv = document.getElementById("fileList");
     const downloadBtn = document.getElementById("download");
+    const refreshBtn = document.getElementById("refresh");
     const fileCountSpan = document.getElementById("fileCount");
+    const themeDropdown = document.querySelector(".theme-dropdown");
+    const themeLinks = document.querySelectorAll(".theme-dropdown-content a");
     let files = {};
+
+    function setTheme(themeName) {
+        document.body.className = themeName;
+        localStorage.setItem('theme', themeName); 
+    }
+
+    themeLinks.forEach(link => {
+        link.addEventListener("click", function(event) {
+            event.preventDefault(); 
+            const theme = this.dataset.theme;
+            setTheme(theme);
+            themeDropdown.classList.remove("show"); 
+        });
+    });
+
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        setTheme(savedTheme);
+    }
+
     chrome.devtools.network.onRequestFinished.addListener(request => {
         const url = request.request.url;
         if (!files[url]) {
@@ -10,6 +33,13 @@ document.addEventListener("DOMContentLoaded", function() {
             fileListDiv.innerHTML += `<div>${url}</div>`;
             fileCountSpan.textContent = Object.keys(files).length;
         }
+    });
+    refreshBtn.addEventListener("click", async function() {
+        chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+            chrome.tabs.reload(tabs[0].id);
+        });
+        files = {};
+        fileListDiv.innerHTML = "";
     });
     downloadBtn.addEventListener("click", async function() {
         const zip = new JSZip();
@@ -75,7 +105,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     filePath += "index.html";
                 }
                 console.log(`Adding file to ZIP: ${filePath}`);
-                zip.file(filePath, fileContent);
+                zip.file(decodeURIComponent(filePath), fileContent);
             } catch (e) {
                 console.error("Error processing URL:", url, e);
             }
