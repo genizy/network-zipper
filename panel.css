@@ -2,11 +2,12 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 20px;
-    background-color: var(--body-bg); 
-    color: var(--text-color); 
-    transition: background-color 0.3s, color 0.3s; 
+    background-color: var(--body-bg); /* Use CSS variable for background */
+    color: var(--text-color); /* Use CSS variable for text color */
+    transition: background-color 0.3s, color 0.3s; /* Smooth transition */
 }
 
+/* Define CSS variables for light theme (default) */
 :root {
     --body-bg: #f4f7f6;
     --text-color: #333;
@@ -24,6 +25,7 @@ body {
     --file-list-border-bottom: #eee;
 }
 
+/* Dark theme */
 body.dark-theme {
     --body-bg: #222;
     --text-color: #eee;
@@ -41,6 +43,7 @@ body.dark-theme {
     --file-list-border-bottom: #555;
 }
 
+/* Midnight theme */
 body.midnight-theme {
     --body-bg: #121212;
     --text-color: #f0f0f0;
@@ -75,6 +78,7 @@ body.cyberpunk-theme {
     --file-list-border-bottom: #ff00ff;
 }
 
+/* Hacker theme */
 body.hacker-theme {
     --body-bg: #000;
     --text-color: #00ff00;
@@ -92,6 +96,7 @@ body.hacker-theme {
     --file-list-border-bottom: #004d00;
 }
 
+/* Sunset theme */
 body.sunset-theme {
     --body-bg: #ff9966;
     --text-color: #4d2600;
@@ -109,6 +114,7 @@ body.sunset-theme {
     --file-list-border-bottom: #ff9933;
 }
 
+/* Ocean theme */
 body.ocean-theme {
     --body-bg: #0077b6;
     --text-color: #ffffff;
@@ -126,6 +132,7 @@ body.ocean-theme {
     --file-list-border-bottom: #005f8f;
 }
 
+/* Retro arcade theme */
 body.retro-arcade-theme {
     --body-bg: #1a1a2e;
     --text-color: #f72585;
@@ -155,12 +162,12 @@ body.retro-arcade-theme {
 }
 
 .panel-header h1 {
-    color: var(--header-color); 
+    color: var(--header-color); /* Use CSS variable */
     margin-bottom: 5px;
 }
 
 .panel-header p {
-    color: var(--header-text-color); 
+    color: var(--header-text-color); /* Use CSS variable */
 }
 
 .controls {
@@ -168,6 +175,7 @@ body.retro-arcade-theme {
     display: flex;
     align-items: center;
     justify-content: flex-start;
+    gap: 10px;
 }
 
 .utility {
@@ -184,12 +192,12 @@ body.retro-arcade-theme {
     cursor: pointer;
     font-size: 14px;
     color: white;
-    background-color: var(--button-bg); 
+    background-color: var(--button-bg); /* Use CSS variable */
     transition: background-color 0.3s ease;
 }
 
 .button:hover {
-    background-color: var(--button-hover-bg); 
+    background-color: var(--button-hover-bg); /* Use CSS variable */
 }
 
 .button:focus {
@@ -198,11 +206,11 @@ body.retro-arcade-theme {
 }
 
 .button.primary {
-    background-color: var(--primary-button-bg); 
+    background-color: var(--primary-button-bg); /* Use CSS variable */
 }
 
 .button.primary:hover {
-    background-color: var(--primary-button-hover-bg); 
+    background-color: var(--primary-button-hover-bg); /* Use CSS variable */
 }
 
 .checkbox-group {
@@ -214,7 +222,7 @@ body.retro-arcade-theme {
 .checkbox-group label {
     display: flex;
     align-items: center;
-    color: var(--checkbox-color); 
+    color: var(--checkbox-color); /* Use CSS variable */
 }
 
 .checkbox-group input[type="checkbox"] {
@@ -223,38 +231,39 @@ body.retro-arcade-theme {
 
 .file-info {
     margin-bottom: 15px;
-    color: var(--file-info-color); 
+    color: var(--file-info-color); /* Use CSS variable */
 }
 
 .file-list-container {
     flex-grow: 1;
-    overflow: hidden; 
+    overflow: hidden; /* Ensure the container respects its boundaries */
 }
 
 .file-list {
     max-height: 300px;
     overflow-y: auto;
-    background-color: var(--file-list-bg); 
-    border: 1px solid var(--file-list-border); 
+    background-color: var(--file-list-bg); /* Use CSS variable */
+    border: 1px solid var(--file-list-border); /* Use CSS variable */
     border-radius: 5px;
     padding: 10px;
     font-size: 14px;
     line-height: 1.6;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    color: var(--file-list-text-color); 
+    color: var(--file-list-text-color); /* Use CSS variable */
 }
 
 .file-list div {
     padding: 8px 0;
-    border-bottom: 1px solid var(--file-list-border-bottom); 
-    color: var(--file-list-text-color); 
-    word-break: break-all; 
+    border-bottom: 1px solid var(--file-list-border-bottom); /* Use CSS variable */
+    color: var(--file-list-text-color); /* Use CSS variable */
+    word-break: break-all; /* Prevent long URLs from breaking the layout */
 }
 
 .file-list div:last-child {
     border-bottom: none;
 }
 
+/* Theme Dropdown Styles */
 .theme-dropdown {
     position: absolute;
     bottom: 20px;
@@ -286,7 +295,7 @@ body.retro-arcade-theme {
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     padding: 8px 0;
     z-index: 1;
-    right: 0; 
+    right: 0; /* Align to the right */
 }
 
 .theme-dropdown-content a {

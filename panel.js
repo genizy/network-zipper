@@ -9,15 +9,15 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function setTheme(themeName) {
         document.body.className = themeName;
-        localStorage.setItem('theme', themeName); 
+        localStorage.setItem('theme', themeName);
     }
 
     themeLinks.forEach(link => {
         link.addEventListener("click", function(event) {
-            event.preventDefault(); 
+            event.preventDefault();
             const theme = this.dataset.theme;
             setTheme(theme);
-            themeDropdown.classList.remove("show"); 
+            themeDropdown.classList.remove("show");
         });
     });
 
@@ -29,11 +29,14 @@ document.addEventListener("DOMContentLoaded", function() {
     chrome.devtools.network.onRequestFinished.addListener(request => {
         const url = request.request.url;
         if (!files[url]) {
+            const urlObj = new URL(url);
+            if (urlObj.protocol === "blob:" || urlObj.protocol === "data:") return;
             files[url] = request;
             fileListDiv.innerHTML += `<div>${url}</div>`;
             fileCountSpan.textContent = Object.keys(files).length;
         }
     });
+
     refreshBtn.addEventListener("click", async function() {
         chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
             chrome.tabs.reload(tabs[0].id);
@@ -41,10 +44,10 @@ document.addEventListener("DOMContentLoaded", function() {
         files = {};
         fileListDiv.innerHTML = "";
     });
+
     downloadBtn.addEventListener("click", async function() {
         const zip = new JSZip();
         let mainUrl = "network_zipper";
-        console.log("Collected files:", files);
         try {
             const urls = Object.keys(files);
             if (urls.length > 0) {
@@ -54,68 +57,29 @@ document.addEventListener("DOMContentLoaded", function() {
         } catch (e) {
             console.error("Error getting main URL:", e);
         }
-        const getFileContent = (request, url) => {
-            return new Promise((resolve) => {
-                request.getContent((content, encoding) => {
-                    if (chrome.runtime.lastError) {
-                        console.error("Error fetching content:", chrome.runtime.lastError);
-                        return resolve(null);
-                    }
-                    resolve({
-                        content,
-                        encoding
-                    });
-                });
-            });
-        };
+
         const filePromises = Object.keys(files).map(async (url) => {
             try {
-                let request = files[url];
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
+                const blob = await response.blob();
+                const fileContent = await blob.arrayBuffer();
                 const urlObj = new URL(url);
-                if (document.getElementById("ignoreBlob").checked && urlObj.protocol === "blob:") return;
-                if (document.getElementById("ignoreData").checked && urlObj.protocol === "data:") return;
-                console.log(`Fetching content for: ${url}`);
-                let fileContent;
-                let fileData = await getFileContent(request, url);
-                if (!fileData || !fileData.content) {
-                    console.warn(`DevTools API couldn't get content for ${url}, trying fetch()`);
-                    try {
-                        const response = await fetch(url);
-                        if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
-                        const blob = await response.blob();
-                        fileContent = await blob.arrayBuffer();
-                    } catch (fetchError) {
-                        console.error(`Fetch failed for ${url}:`, fetchError);
-                        return;
-                    }
-                } else {
-                    let {
-                        content,
-                        encoding
-                    } = fileData;
-                    if (encoding === "base64") {
-                        console.log(`Decoding binary file: ${url}`);
-                        fileContent = Uint8Array.from(atob(content), c => c.charCodeAt(0));
-                    } else {
-                        fileContent = new TextEncoder().encode(content);
-                    }
-                }
                 let filePath = urlObj.hostname + urlObj.pathname;
                 if (filePath.endsWith("/")) {
                     filePath += "index.html";
                 }
-                console.log(`Adding file to ZIP: ${filePath}`);
                 zip.file(decodeURIComponent(filePath), fileContent);
             } catch (e) {
                 console.error("Error processing URL:", url, e);
             }
         });
+
         try {
             await Promise.all(filePromises);
             const zipContent = await zip.generateAsync({
                 type: "blob"
             });
-            console.log("ZIP file size:", zipContent.size, "bytes");
             const link = document.createElement("a");
             link.href = URL.createObjectURL(zipContent);
             link.download = `${mainUrl}.zip`;
