@@ -8,13 +8,12 @@
 <body>
     <div class="panel-container">
         <header class="panel-header">
-            <h1>Network Zipper</h1>
+            <h1>Network Zipper <span id="version"></span></h1>
             <p>Download network resources as a zip file.</p>
         </header>
 
         <section class="controls">
             <button id="download" class="button primary">Download</button>
-
             <button id="refresh" class="button">Refresh Files</button>
         </section>
 
@@ -38,6 +37,11 @@
                 <a href="#" data-theme="ocean-theme">Ocean</a>
                 <a href="#" data-theme="retro-arcade-theme">Retro Arcade</a>
             </div>            
+        </div>
+
+        <div class="footer-buttons">
+            <button id="github" class="button">GitHub</button>
+            <button id="discord" class="button">Discord</button>
         </div>
     </div>
     <script src="lib/jszip.min.js"></script>

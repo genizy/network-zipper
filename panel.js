@@ -5,7 +5,17 @@ document.addEventListener("DOMContentLoaded", function() {
     const fileCountSpan = document.getElementById("fileCount");
     const themeDropdown = document.querySelector(".theme-dropdown");
     const themeLinks = document.querySelectorAll(".theme-dropdown-content a");
+    const versionSpan = document.getElementById("version");
+    const githubBtn = document.getElementById("github");
+    const discordBtn = document.getElementById("discord");
     let files = {};
+
+    // Fetch and display the version from manifest.json
+    fetch(chrome.runtime.getURL('manifest.json'))
+        .then(response => response.json())
+        .then(manifest => {
+            versionSpan.textContent = `v${manifest.version}`;
+        });
 
     function setTheme(themeName) {
         document.body.className = themeName;
@@ -90,4 +100,38 @@ document.addEventListener("DOMContentLoaded", function() {
             console.error("Error generating zip:", e);
         }
     });
+
+    githubBtn.addEventListener("click", function() {
+        window.open("https://github.com/genizy/network-zipper", "_blank");
+    });
+
+    discordBtn.addEventListener("click", function() {
+        window.open("https://discord.gg/NAFw4ykZ7n ", "_blank");
+    });
+
+    fetch('https://raw.githubusercontent.com/genizy/network-zipper/main/manifest.json')
+        .then(response => response.json())
+        .then(latestManifest => {
+            fetch(chrome.runtime.getURL('manifest.json'))
+                .then(response => response.json())
+                .then(currentManifest => {
+                    if (latestManifest.version > currentManifest.version) {
+                        const updateBanner = document.createElement('div');
+                        updateBanner.innerHTML = `
+                            A new version is available! 
+                            <a href="https://github.com/genizy/network-zipper" target="_blank">
+                                Update from v${currentManifest.version} to v${latestManifest.version}
+                            </a>
+                        `;
+                        updateBanner.style.position = 'fixed';
+                        updateBanner.style.top = '0';
+                        updateBanner.style.width = '100%';
+                        updateBanner.style.backgroundColor = 'yellow';
+                        updateBanner.style.color = 'black';
+                        updateBanner.style.textAlign = 'center';
+                        updateBanner.style.padding = '10px';
+                        document.body.appendChild(updateBanner);
+                    }
+                });
+        });
 });

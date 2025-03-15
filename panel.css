@@ -313,3 +313,15 @@ body.retro-arcade-theme {
 .theme-dropdown:hover .theme-dropdown-content {
     display: block;
 }
+
+.footer-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 10;
+}
