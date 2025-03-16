@@ -72,7 +72,10 @@ document.addEventListener("DOMContentLoaded", function() {
         const filePromises = Object.keys(files).map(async (url) => {
             try {
                 const urlObj = new URL(url);
-                const extension = urlObj.pathname.split(".").pop();
+                let filePath = urlObj.hostname + urlObj.pathname;
+                if (filePath.endsWith("/")) filePath += "index.html";
+                if (!filePath.split("/").pop().includes(".")) filePath += ".html";
+                const extension = filePath.split(".").pop();
                 const isTextFile = textFileExtensions.includes(`.${extension}`);
                 
                 let fileContent;
@@ -92,9 +95,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     const blob = await response.blob();
                     fileContent = await blob.arrayBuffer();
                 }
-                let filePath = urlObj.hostname + urlObj.pathname;
-                if (filePath.endsWith("/")) filePath += "index.html";
-                if (!filePath.split("/").pop().includes(".")) filePath += ".html";
                 zip.file(decodeURIComponent(filePath), fileContent);
             } catch (e) {
                 console.error("Error processing URL:", url, e);
