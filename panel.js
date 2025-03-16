@@ -36,6 +36,8 @@ document.addEventListener("DOMContentLoaded", function() {
         setTheme(savedTheme);
     }
 
+    const textFileExtensions = [".html", ".css", ".js", ".json", ".txt"];
+    
     chrome.devtools.network.onRequestFinished.addListener(request => {
         const url = request.request.url;
         if (!files[url]) {
@@ -61,8 +63,7 @@ document.addEventListener("DOMContentLoaded", function() {
         try {
             const urls = Object.keys(files);
             if (urls.length > 0) {
-                const firstUrl = new URL(urls[0]);
-                mainUrl = firstUrl.hostname;
+                mainUrl = new URL(urls[0]).hostname;
             }
         } catch (e) {
             console.error("Error getting main URL:", e);
@@ -70,15 +71,30 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const filePromises = Object.keys(files).map(async (url) => {
             try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
-                const blob = await response.blob();
-                const fileContent = await blob.arrayBuffer();
                 const urlObj = new URL(url);
-                let filePath = urlObj.hostname + urlObj.pathname;
-                if (filePath.endsWith("/")) {
-                    filePath += "index.html";
+                const extension = urlObj.pathname.split(".").pop();
+                const isTextFile = textFileExtensions.includes(`.${extension}`);
+                
+                let fileContent;
+                if (isTextFile) {
+                    const response = await new Promise((resolve, reject) => {
+                        files[url].getContent((content, encoding) => {
+                            if (encoding === 'base64') {
+                                content = atob(content);
+                            }
+                            resolve(content);
+                        });
+                    });
+                    fileContent = new TextEncoder().encode(response);
+                } else {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
+                    const blob = await response.blob();
+                    fileContent = await blob.arrayBuffer();
                 }
+                let filePath = urlObj.hostname + urlObj.pathname;
+                if (filePath.endsWith("/")) filePath += "index.html";
+                if (!filePath.split("/").pop().includes(".")) filePath += ".html";
                 zip.file(decodeURIComponent(filePath), fileContent);
             } catch (e) {
                 console.error("Error processing URL:", url, e);
@@ -87,9 +103,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         try {
             await Promise.all(filePromises);
-            const zipContent = await zip.generateAsync({
-                type: "blob"
-            });
+            const zipContent = await zip.generateAsync({ type: "blob" });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(zipContent);
             link.download = `${mainUrl}.zip`;
@@ -106,7 +120,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     discordBtn.addEventListener("click", function() {
-        window.open("https://discord.gg/NAFw4ykZ7n ", "_blank");
+        window.open("https://discord.gg/NAFw4ykZ7n", "_blank");
     });
 
     fetch('https://raw.githubusercontent.com/genizy/network-zipper/main/manifest.json')
