@@ -213,21 +213,42 @@ body.retro-arcade-theme {
     background-color: var(--primary-button-hover-bg); /* Use CSS variable */
 }
 
-.checkbox-group {
-    display: flex;
-    gap: 15px;
-    margin-left: 20px;
-}
-
-.checkbox-group label {
-    display: flex;
+/* Add this to your panel.css */
+.checkbox-button {
+    display: inline-flex;
     align-items: center;
-    color: var(--checkbox-color); /* Use CSS variable */
+    cursor: pointer;
 }
 
-.checkbox-group input[type="checkbox"] {
-    margin-right: 5px;
+.checkbox-button input[type="checkbox"] {
+    display: none; /* Hide the actual checkbox */
 }
+
+.checkbox-button .button {
+    /* Inherit button styles */
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    color: white;
+    background-color: #be0000; /* too lazy to make another variable for each theme */
+    transition: background-color 0.3s ease;
+}
+
+.checkbox-button .button:hover {
+    background-color: #960000;
+}
+
+/* Style for checked state */
+.checkbox-button input[type="checkbox"]:checked + .button {
+    background-color: var(--primary-button-bg); /* Or any other indication */
+}
+
+.checkbox-button input[type="checkbox"]:checked + .button:hover {
+    background-color: var(--primary-button-hover-bg);
+}
+
 
 .file-info {
     margin-bottom: 15px;

@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const fileListDiv = document.getElementById("fileList");
     const downloadBtn = document.getElementById("download");
     const refreshBtn = document.getElementById("refresh");
+    const beautify = document.getElementById('beautify');
     const fileCountSpan = document.getElementById("fileCount");
     const themeDropdown = document.querySelector(".theme-dropdown");
     const themeLinks = document.querySelectorAll(".theme-dropdown-content a");
@@ -89,6 +90,26 @@ document.addEventListener("DOMContentLoaded", function() {
                         });
                     });
                     fileContent = new TextEncoder().encode(response);
+                    
+                    if (beautify.checked) {
+                        switch (extension) {
+                            case 'html':
+                                fileContent = html_beautify(response, { indent_size: 2 });
+                                break;
+                            case 'css':
+                                fileContent = css_beautify(response, { indent_size: 2 });
+                                break;
+                            case 'js':
+                                fileContent = js_beautify(response, { indent_size: 2 });
+                                break;
+                            case 'json':
+                                fileContent = JSON.stringify(JSON.parse(response), null, 2); 
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
                 } else {
                     const response = await fetch(url);
                     if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);

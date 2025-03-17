@@ -15,6 +15,10 @@
         <section class="controls">
             <button id="download" class="button primary">Download</button>
             <button id="refresh" class="button">Refresh Files</button>
+            <label class="checkbox-button">
+                <input type="checkbox" id="beautify">
+                <span class="button">Beautify Files</span>
+            </label>
         </section>
 
         <section class="file-info">
@@ -44,7 +48,10 @@
             <button id="discord" class="button">Discord</button>
         </div>
     </div>
-    <script src="lib/jszip.min.js"></script>
+    <script src="lib/jszip.js"></script>
+    <script src="lib/beautify.js"></script>
+    <script src="lib/beautify-css.js"></script>
+    <script src="lib/beautify-html.js"></script>
     <script src="panel.js"></script>
 </body>
 </html>
