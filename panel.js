@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const url = request.request.url;
         if (!files[url]) {
             const urlObj = new URL(url);
-            if (!urlObj.protocol === "http:" || !urlObj.protocol === "https:") return;
+            if (urlObj.protocol !== "http:" && urlObj.protocol !== "https:") return;
             files[url] = request;
             fileListDiv.innerHTML += `<div>${url}</div>`;
             fileCountSpan.textContent = Object.keys(files).length;
