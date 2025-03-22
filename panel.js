@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function() {
         setTheme(savedTheme);
     }
 
-    const textFileExtensions = [".html", ".css", ".js", ".json", ".txt"];
+    const textFileExtensions = [".html", ".htm", "css", "js", "json"];
     
     chrome.devtools.network.onRequestFinished.addListener(request => {
         const url = request.request.url;
@@ -91,9 +91,26 @@ document.addEventListener("DOMContentLoaded", function() {
                     });
                     fileContent = new TextEncoder().encode(response);
                     
+            
+                    if (fileContent.length === 0) {
+                        const response = await fetch(urlObj, {
+                            headers: {
+                                "Origin": urlObj.origin,
+                                "Referrer": urlObj.href
+                            },
+                            method: "GET"
+                        });
+                        if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
+                        const content = await response.text();
+                        fileContent = new TextEncoder().encode(content);
+                    }
+
                     if (beautify.checked) {
                         switch (extension) {
                             case 'html':
+                                fileContent = html_beautify(response, { indent_size: 2 });
+                                break;
+                            case 'htm':
                                 fileContent = html_beautify(response, { indent_size: 2 });
                                 break;
                             case 'css':
@@ -111,7 +128,13 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
 
                 } else {
-                    const response = await fetch(url);
+                    const response = await fetch(url, {
+                        headers: {
+                            "Origin": urlObj.origin,
+                            "Referrer": urlObj.href
+                        },
+                        method: "GET"
+                    });
                     if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
                     const blob = await response.blob();
                     fileContent = await blob.arrayBuffer();
