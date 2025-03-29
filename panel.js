@@ -72,28 +72,64 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const filePromises = Object.keys(files).map(async (url) => {
             try {
-                const urlObj = new URL(url);
-                let filePath = urlObj.hostname + urlObj.pathname;
-                if (filePath.endsWith("/")) filePath += "index.html";
-                if (!filePath.split("/").pop().includes(".")) filePath += ".html";
-                const extension = filePath.split(".").pop();
-                const isTextFile = textFileExtensions.includes(`.${extension}`);
-                
-                let fileContent;
-                if (isTextFile) {
-                    const response = await new Promise((resolve, reject) => {
-                        files[url].getContent((content, encoding) => {
-                            if (encoding === 'base64') {
-                                content = atob(content);
-                            }
-                            resolve(content);
-                        });
-                    });
-                    fileContent = new TextEncoder().encode(response);
+                if (files[url].request.method+"" === "GET") {
+                    const urlObj = new URL(url);
+                    let filePath = urlObj.hostname + urlObj.pathname;
+                    if (filePath.endsWith("/")) filePath += "index.html";
+                    if (!filePath.split("/").pop().includes(".")) filePath += ".html";
+                    const extension = filePath.split(".").pop();
+                    const isTextFile = textFileExtensions.includes(`.${extension}`);
                     
-            
-                    if (fileContent.length === 0) {
-                        const response = await fetch(urlObj, {
+                    let fileContent;
+                    if (isTextFile) {
+                        const response = await new Promise((resolve, reject) => {
+                            files[url].getContent((content, encoding) => {
+                                if (encoding === 'base64') {
+                                    content = atob(content);
+                                }
+                                resolve(content);
+                            });
+                        });
+                        fileContent = new TextEncoder().encode(response);
+                        
+                
+                        if (fileContent.length === 0 || fileContent+"" === "null") {
+                            const response = await fetch(urlObj, {
+                                headers: {
+                                    "Origin": urlObj.origin,
+                                    "Referrer": urlObj.href
+                                },
+                                method: "GET"
+                            });
+                            if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
+                            const content = await response.text();
+                            fileContent = new TextEncoder().encode(content);
+                        }
+    
+                        if (beautify.checked) {
+                            switch (extension) {
+                                case 'html':
+                                    fileContent = html_beautify(response, { indent_size: 2 });
+                                    break;
+                                case 'htm':
+                                    fileContent = html_beautify(response, { indent_size: 2 });
+                                    break;
+                                case 'css':
+                                    fileContent = css_beautify(response, { indent_size: 2 });
+                                    break;
+                                case 'js':
+                                    fileContent = js_beautify(response, { indent_size: 2 });
+                                    break;
+                                case 'json':
+                                    fileContent = JSON.stringify(JSON.parse(response), null, 2); 
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+    
+                    } else {
+                        const response = await fetch(url, {
                             headers: {
                                 "Origin": urlObj.origin,
                                 "Referrer": urlObj.href
@@ -101,45 +137,11 @@ document.addEventListener("DOMContentLoaded", function() {
                             method: "GET"
                         });
                         if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
-                        const content = await response.text();
-                        fileContent = new TextEncoder().encode(content);
+                        const blob = await response.blob();
+                        fileContent = await blob.arrayBuffer();
                     }
-
-                    if (beautify.checked) {
-                        switch (extension) {
-                            case 'html':
-                                fileContent = html_beautify(response, { indent_size: 2 });
-                                break;
-                            case 'htm':
-                                fileContent = html_beautify(response, { indent_size: 2 });
-                                break;
-                            case 'css':
-                                fileContent = css_beautify(response, { indent_size: 2 });
-                                break;
-                            case 'js':
-                                fileContent = js_beautify(response, { indent_size: 2 });
-                                break;
-                            case 'json':
-                                fileContent = JSON.stringify(JSON.parse(response), null, 2); 
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-
-                } else {
-                    const response = await fetch(url, {
-                        headers: {
-                            "Origin": urlObj.origin,
-                            "Referrer": urlObj.href
-                        },
-                        method: "GET"
-                    });
-                    if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
-                    const blob = await response.blob();
-                    fileContent = await blob.arrayBuffer();
+                    zip.file(decodeURIComponent(filePath), fileContent);
                 }
-                zip.file(decodeURIComponent(filePath), fileContent);
             } catch (e) {
                 console.error("Error processing URL:", url, e);
             }
