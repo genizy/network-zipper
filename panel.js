@@ -36,8 +36,10 @@ document.addEventListener("DOMContentLoaded", function() {
     if (savedTheme) {
         setTheme(savedTheme);
     }
-
-    const textFileExtensions = [".html", ".htm", "css", "js", "json"];
+    let textFileExtensions; 
+    fetch("https://raw.githubusercontent.com/sindresorhus/text-extensions/refs/heads/main/text-extensions.json").then(response => response.json()).then(json => {
+        textFileExtensions = json;
+    });
     
     chrome.devtools.network.onRequestFinished.addListener(request => {
         const url = request.request.url;
@@ -78,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     if (filePath.endsWith("/")) filePath += "index.html";
                     if (!filePath.split("/").pop().includes(".")) filePath += ".html";
                     const extension = filePath.split(".").pop();
-                    const isTextFile = textFileExtensions.includes(`.${extension}`);
+                    const isTextFile = textFileExtensions.includes(`${extension}`);
                     
                     let fileContent;
                     if (isTextFile) {
@@ -129,16 +131,39 @@ document.addEventListener("DOMContentLoaded", function() {
                         }
     
                     } else {
-                        const response = await fetch(url, {
-                            headers: {
-                                "Origin": urlObj.origin,
-                                "Referrer": urlObj.href
-                            },
-                            method: "GET"
-                        });
-                        if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
-                        const blob = await response.blob();
-                        fileContent = await blob.arrayBuffer();
+                        try {
+                            const response = await fetch(url, {
+                                headers: {
+                                    "Origin": urlObj.origin,
+                                    "Referrer": urlObj.href
+                                },
+                                method: "GET"
+                            });
+        
+                            if (response.ok) {
+                                const blob = await response.blob();
+                                fileContent = await blob.arrayBuffer();
+                            } else {
+                                const cachedContent = await new Promise((resolve, reject) => {
+                                    files[url].getContent((content, encoding) => {
+                                        if (!content) return reject("No cached content");
+                                        try {
+                                            if (encoding === 'base64') {
+                                                const encoded = Uint8Array.from(atob(content), c => c.charCodeAt(0));
+                                                resolve(encoded.buffer);
+                                            } else {
+                                                resolve(new TextEncoder().encode(content).buffer);
+                                            }
+                                        } catch (err) {
+                                            reject(err);
+                                        }
+                                    });
+                                });
+                                fileContent = cachedContent;
+                            }
+                        } catch (fetchErr) {
+                            console.warn("Fetch error:", fetchErr);
+                        }
                     }
                     zip.file(decodeURIComponent(filePath), fileContent);
                 }
