@@ -62,15 +62,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
     downloadBtn.addEventListener("click", async function() {
         const zip = new JSZip();
-        let mainUrl = "network_zipper";
-        try {
-            const urls = Object.keys(files);
-            if (urls.length > 0) {
-                mainUrl = new URL(urls[0]).hostname;
-            }
-        } catch (e) {
-            console.error("Error getting main URL:", e);
-        }
 
         const filePromises = Object.keys(files).map(async (url) => {
             try {
@@ -175,12 +166,14 @@ document.addEventListener("DOMContentLoaded", function() {
         try {
             await Promise.all(filePromises);
             const zipContent = await zip.generateAsync({ type: "blob" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(zipContent);
-            link.download = `${mainUrl}.zip`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(zipContent);
+                link.download = `${tabs[0].url.hostname}.zip`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
         } catch (e) {
             console.error("Error generating zip:", e);
         }
