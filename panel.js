@@ -88,16 +88,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
                     fileContent = new TextEncoder().encode(response);
                     if (fileContent.length === 0 || fileContent + "" === "null") {
-                        let headers = {};
-                        for (const {
-                                name,
-                                value
-                            }
-                            of files[url].request.headers) {
-                            headers[name] = value;
-                        }
                         const response = await fetch(url, {
-                            headers: headers,
+                            headers: {
+                                "Origin": urlObj.origin,
+                                "Referrer": urlObj.href
+                            },
                             method: files[url].request.method
                         });
                         const content = await response.text();
@@ -135,16 +130,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                     }
                 } else {
-                    let headers = {};
-                    for (const {
-                            name,
-                            value
-                        }
-                        of files[url].request.headers) {
-                        headers[name] = value;
-                    }
                     const response = await fetch(url, {
-                        headers: headers,
+                        headers: {
+                            "Origin": urlObj.origin,
+                            "Referrer": urlObj.href
+                        },
                         method: files[url].request.method
                     });
                     const blob = await response.blob();
