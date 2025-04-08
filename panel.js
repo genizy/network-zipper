@@ -11,6 +11,11 @@ document.addEventListener("DOMContentLoaded", function() {
     const discordBtn = document.getElementById("discord");
     let files = {};
 
+    let currentTabID;
+    chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+        currentTabID = tabs[0].id;
+    });
+
     // Fetch and display the version from manifest.json
     fetch(chrome.runtime.getURL('manifest.json'))
         .then(response => response.json())
@@ -53,16 +58,22 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     refreshBtn.addEventListener("click", async function() {
-        chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
-            chrome.tabs.reload(tabs[0].id);
-        });
+        chrome.tabs.reload(currentTabID);
         files = {};
         fileListDiv.innerHTML = "";
     });
 
     downloadBtn.addEventListener("click", async function() {
         const zip = new JSZip();
-
+        let mainUrl = "network_zipper";
+         try {
+             const urls = Object.keys(files);
+             if (urls.length > 0) {
+                 mainUrl = new URL(urls[0]).hostname;
+             }
+         } catch (e) {
+             console.error("Error getting main URL:", e);
+         }
         const filePromises = Object.keys(files).map(async (url) => {
             try {
                 if (files[url].request.method+"" === "GET") {
@@ -94,9 +105,9 @@ document.addEventListener("DOMContentLoaded", function() {
                                 },
                                 method: "GET"
                             });
-                            if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
                             const content = await response.text();
                             fileContent = new TextEncoder().encode(content);
+                            if (!response.ok) console.error(`Fetch failed: ${response.status}`);
                         }
     
                         if (beautify.checked) {
@@ -122,39 +133,16 @@ document.addEventListener("DOMContentLoaded", function() {
                         }
     
                     } else {
-                        try {
-                            const response = await fetch(url, {
-                                headers: {
-                                    "Origin": urlObj.origin,
-                                    "Referrer": urlObj.href
-                                },
-                                method: "GET"
-                            });
-        
-                            if (response.ok) {
-                                const blob = await response.blob();
-                                fileContent = await blob.arrayBuffer();
-                            } else {
-                                const cachedContent = await new Promise((resolve, reject) => {
-                                    files[url].getContent((content, encoding) => {
-                                        if (!content) return reject("No cached content");
-                                        try {
-                                            if (encoding === 'base64') {
-                                                const encoded = Uint8Array.from(atob(content), c => c.charCodeAt(0));
-                                                resolve(encoded.buffer);
-                                            } else {
-                                                resolve(new TextEncoder().encode(content).buffer);
-                                            }
-                                        } catch (err) {
-                                            reject(err);
-                                        }
-                                    });
-                                });
-                                fileContent = cachedContent;
-                            }
-                        } catch (fetchErr) {
-                            console.warn("Fetch error:", fetchErr);
-                        }
+                        const response = await fetch(url, {
+                            headers: {
+                                "Origin": urlObj.origin,
+                                "Referrer": urlObj.href
+                            },
+                            method: "GET"
+                        });
+                        const blob = await response.blob();
+                        fileContent = await blob.arrayBuffer();
+                        if (!response.ok) console.error(`Fetch failed: ${response.status}`);
                     }
                     zip.file(decodeURIComponent(filePath), fileContent);
                 }
@@ -166,14 +154,13 @@ document.addEventListener("DOMContentLoaded", function() {
         try {
             await Promise.all(filePromises);
             const zipContent = await zip.generateAsync({ type: "blob" });
-            chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(zipContent);
-                link.download = `${tabs[0].url.hostname}.zip`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            });
+            let tab = await chrome.tabs.get(currentTabID);
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(zipContent);
+            link.download = `${tab.url.hostname ? tab.url.hostname : mainUrl}.zip`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         } catch (e) {
             console.error("Error generating zip:", e);
         }
