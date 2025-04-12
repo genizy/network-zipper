@@ -88,16 +88,16 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
                     fileContent = new TextEncoder().encode(response);
                     if (fileContent.length === 0 || fileContent + "" === "null") {
-                        const response = await fetch(url, {
+                        const urlResponse = await fetch(url, {
                             headers: {
                                 "Origin": urlObj.origin,
                                 "Referrer": urlObj.href
                             },
                             method: files[url].request.method
                         });
-                        const content = await response.text();
+                        const content = await urlResponse.text();
                         fileContent = new TextEncoder().encode(content);
-                        if (!response.ok) console.error(`Fetch failed: ${response.status}`);
+                        if (!urlResponse.ok) console.error(`Fetch failed: ${urlResponse.status}`);
                     }
                     if (beautify.checked) {
                         switch (extension) {

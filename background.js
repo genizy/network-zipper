@@ -1,12 +1,16 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'fetchFile') {
         const { url } = message;
-        const textFileExtensions = [".html", ".css", ".js", ".json", ".txt"];
+        let textFileExtensions;
+        fetch("https://raw.githubusercontent.com/sindresorhus/text-extensions/refs/heads/main/text-extensions.json").then(response => response.json()).then(json => {
+            textFileExtensions = json;
+        });
+        
         let filePath = url.hostname + url.pathname;
         if (filePath.endsWith("/")) filePath += "index.html";
         if (!filePath.split("/").pop().includes(".")) filePath += ".html";
         const extension = filePath.split(".").pop();
-        const isTextFile = textFileExtensions.includes(`.${extension}`);
+        const isTextFile = textFileExtensions.includes(`${extension}`);
 
         if (isTextFile) {
             chrome.devtools.inspectedWindow.eval(
