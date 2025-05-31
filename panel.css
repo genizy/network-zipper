@@ -284,6 +284,40 @@ body.retro-arcade-theme {
     border-bottom: none;
 }
 
+.download-info {
+    margin-bottom: 15px;
+    color: var(--file-info-color); /* Use CSS variable */
+}
+
+.download-status-container {
+    flex-grow: 1;
+    overflow: hidden; /* Ensure the container respects its boundaries */
+}
+
+.download-status {
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: var(--file-list-bg); /* Use CSS variable */
+    border: 1px solid var(--file-list-border); /* Use CSS variable */
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 14px;
+    line-height: 1.6;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    color: var(--file-list-text-color); /* Use CSS variable */
+}
+
+.download-status div {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--file-list-border-bottom); /* Use CSS variable */
+    color: var(--file-list-text-color); /* Use CSS variable */
+    word-break: break-all; /* Prevent long URLs from breaking the layout */
+}
+
+.download-status div:last-child {
+    border-bottom: none;
+}
+
 /* Theme Dropdown Styles */
 .theme-dropdown {
     position: absolute;

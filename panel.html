@@ -13,14 +13,34 @@
         </header>
 
         <section class="controls">
-            <button id="download" class="button primary">Download</button>
-            <button id="refresh" class="button">Refresh Files</button>
-            <label class="checkbox-button">
+            <button id="download" class="button primary" 
+                title="Zips all the files scanned in the network tab into 1 zip file and sends a download."
+            >Download</button>
+            <button id="refresh" class="button" 
+                title="Resets the current scanned tab and gets scans for more files."
+            >Refresh Files</button>
+            <label class="checkbox-button" 
+                title="Formats HTML, CSS and Javascript files."
+            >
                 <input type="checkbox" id="beautify">
                 <span class="button">Beautify Files</span>
             </label>
+            <label class="checkbox-button" 
+                title="Add the '.html' extension to files that have no extension. Could be useful for websites but some games have extension-less engine files."
+            >
+                <input type="checkbox" id="addhtml">
+                <span class="button">Add .html to extension-less files</span>
+            </label>
         </section>
 
+        <section class="download-info">
+            <span>Download status:</span>
+        </section>
+
+        <section class="download-status-container">
+            <div id="downloadStatus" class="download-status">Waiting...</div>
+        </section>
+        <br>
         <section class="file-info">
             <span>Files: <span id="fileCount">0</span></span>
         </section>

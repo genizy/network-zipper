@@ -3,6 +3,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const downloadBtn = document.getElementById("download");
     const refreshBtn = document.getElementById("refresh");
     const beautify = document.getElementById('beautify');
+    const addhtml = document.getElementById('addhtml');
+    const downloadStatus = document.getElementById('downloadStatus');
     const fileCountSpan = document.getElementById("fileCount");
     const themeDropdown = document.querySelector(".theme-dropdown");
     const themeLinks = document.querySelectorAll(".theme-dropdown-content a");
@@ -58,6 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
         fileListDiv.innerHTML = "";
     });
     downloadBtn.addEventListener("click", async function () {
+        downloadStatus.textContent = 'Started';
         const zip = new JSZip();
         let mainUrl = "network_zipper";
         try {
@@ -68,12 +71,15 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (e) {
             console.error("Error getting main URL:", e);
         }
+        let len = 0;
+        let maxLength = Object.keys(files).length;
+        downloadStatus.textContent = `Fetching files (${len}/${maxLength})..`;
         const filePromises = Object.keys(files).map(async (url) => {
             try {
                 const urlObj = new URL(url);
                 let filePath = urlObj.hostname + urlObj.pathname;
                 if (filePath.endsWith("/")) filePath += "index.html";
-                if (!filePath.split("/").pop().includes(".")) filePath += ".html";
+                if (!filePath.split("/").pop().includes(".") && addhtml.checked) filePath += ".html";
                 const extension = filePath.split(".").pop();
                 const isTextFile = textFileExtensions.includes(`${extension}`);
                 let fileContent;
@@ -141,6 +147,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     fileContent = await blob.arrayBuffer();
                     if (!response.ok) console.error(`Fetch failed: ${response.status}`);
                 }
+                len = len+1;
+                downloadStatus.textContent = `Fetching files (${len}/${maxLength})..`;
                 zip.file(decodeURIComponent(filePath), fileContent);
             } catch (e) {
                 console.error("Error processing URL:", url, e);
@@ -148,14 +156,18 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         try {
             await Promise.all(filePromises);
+            downloadStatus.textContent = `Zipping files (0.00%)..`;
             const zipContent = await zip.generateAsync({
                 type: "blob"
+            }, function updateCallback(metadata) {
+                downloadStatus.textContent = `Zipping files (${metadata.percent.toFixed(2)}%)..`;
             });
             let tab = await chrome.tabs.get(currentTabID);
             const link = document.createElement("a");
             link.href = URL.createObjectURL(zipContent);
             link.download = `${tab.url.hostname ? tab.url.hostname : mainUrl}.zip`;
             document.body.appendChild(link);
+            downloadStatus.textContent = `Sending download..`;
             link.click();
             document.body.removeChild(link);
         } catch (e) {
