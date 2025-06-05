@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const refreshBtn = document.getElementById("refresh");
     const beautify = document.getElementById('beautify');
     const addhtml = document.getElementById('addhtml');
+    const onlyget = document.getElementById('onlyget');
     const downloadStatus = document.getElementById('downloadStatus');
     const fileCountSpan = document.getElementById("fileCount");
     const themeDropdown = document.querySelector(".theme-dropdown");
@@ -46,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     chrome.devtools.network.onRequestFinished.addListener(request => {
         const url = request.request.url;
-        if (!files[url]) {
+        if (!files[url] && (onlyget.checked ? request.request.method === "GET" : true)) {
             const urlObj = new URL(url);
             if (urlObj.protocol !== "http:" && urlObj.protocol !== "https:") return;
             files[url] = request;
@@ -72,9 +73,10 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error("Error getting main URL:", e);
         }
         let len = 0;
-        let maxLength = Object.keys(files).length;
+        let urlList = Object.keys(files).filter(url => (onlyget.checked ? files[url].request.method === "GET" : true));
+        let maxLength = urlList.length;
         downloadStatus.textContent = `Fetching files (${len}/${maxLength})..`;
-        const filePromises = Object.keys(files).map(async (url) => {
+        const filePromises = urlList.map(async (url) => {
             try {
                 const urlObj = new URL(url);
                 let filePath = urlObj.hostname + urlObj.pathname;
