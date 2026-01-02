@@ -13,7 +13,30 @@ document.addEventListener("DOMContentLoaded", function () {
     const githubBtn = document.getElementById("github");
     const discordBtn = document.getElementById("discord");
     let files = {};
+	let errors = [];
     let currentTabID;
+	function logError(message, error) {
+    	const time = new Date().toISOString();
+    	errors.push(
+        	`[${time}] ${message}\n${error?.stack || error || "Unknown error"}\n`
+    	);
+    	console.error(message, error);
+	}
+
+	function fixHeader(oldheaders) {
+		const headers = new Headers();
+    	if (!Array.isArray(oldheaders)) return headers;
+
+    	for (const h of oldheaders) {
+        	if (h.name && h.value) {
+            	if (!/^(:authority|:method|:path|:scheme|content-length)$/i.test(h.name)) {
+                	headers.append(h.name, h.value);
+            	}
+        	}
+    	}
+    	return headers;
+	}
+
     chrome.tabs.query({
         active: true,
         currentWindow: true
@@ -70,7 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 mainUrl = new URL(urls[0]).hostname;
             }
         } catch (e) {
-            console.error("Error getting main URL:", e);
+            logError("Error getting main URL:", e);
         }
         let len = 0;
         let urlList = Object.keys(files).filter(url => (onlyget.checked ? files[url].request.method === "GET" : true));
@@ -96,16 +119,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
                     fileContent = new TextEncoder().encode(response);
                     if (fileContent.length === 0 || fileContent + "" === "null") {
-                        const urlResponse = await fetch(url, {
-                            headers: {
-                                "Origin": urlObj.origin,
-                                "Referrer": urlObj.href
-                            },
-                            method: files[url].request.method
-                        });
+                    	const urlResponse = await fetch(url, {
+                        	headers: fixHeader(files[url].request.headers),
+                        	method: files[url].request.method,
+							body: files[url].request.method !== "GET" ? files[url].request.postData?.text : undefined,
+                    	});
                         const content = await urlResponse.text();
                         fileContent = new TextEncoder().encode(content);
-                        if (!urlResponse.ok) console.error(`Fetch failed: ${urlResponse.status}`);
+                        if (!urlResponse.ok) logError(`Fetch failed: ${urlResponse.status}`);
                     }
                     if (beautify.checked) {
                         switch (extension) {
@@ -139,26 +160,34 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 } else {
                     const response = await fetch(url, {
-                        headers: {
-                            "Origin": urlObj.origin,
-                            "Referrer": urlObj.href
-                        },
-                        method: files[url].request.method
+                        headers: fixHeader(files[url].request.headers),
+                        method: files[url].request.method,
+						body: files[url].request.method !== "GET" ? files[url].request.postData?.text : undefined,
                     });
                     const blob = await response.blob();
                     fileContent = await blob.arrayBuffer();
-                    if (!response.ok) console.error(`Fetch failed: ${response.status}`);
+                    if (!response.ok) {
+    					logError(`Fetch failed (${response.status}) for ${url}`, null);
+					}
+
                 }
                 len = len+1;
                 downloadStatus.textContent = `Fetching files (${len}/${maxLength})..`;
                 zip.file(decodeURIComponent(filePath), fileContent);
             } catch (e) {
-                console.error("Error processing URL:", url, e);
+                logError(`Error processing URL: ${url}`, e);
             }
         });
         try {
             await Promise.all(filePromises);
             downloadStatus.textContent = `Zipping files (0.00%)..`;
+			if (errors.length > 0) {
+    			zip.file(
+        			"errors.log",
+        			errors.join("\n"),
+        			{ compression: "DEFLATE" }
+    			);
+			}
             const zipContent = await zip.generateAsync({
                 type: "blob"
             }, function updateCallback(metadata) {
@@ -173,7 +202,7 @@ document.addEventListener("DOMContentLoaded", function () {
             link.click();
             document.body.removeChild(link);
         } catch (e) {
-            console.error("Error generating zip:", e);
+            logError("Error generating zip:", e);
         }
     });
     githubBtn.addEventListener("click", function () {

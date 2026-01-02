@@ -20,6 +20,6 @@
    "name": "Network Zipper",
    "permissions": [ "activeTab", "tabs" ],
    "update_url": "https://clients2.google.com/service/update2/crx",
-   "version": "0.4.6"
+   "version": "0.5.0"
 }
 
