@@ -29,13 +29,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     	for (const h of oldheaders) {
         	if (h.name && h.value) {
-            	if (!/^(:authority|:method|:path|:scheme|content-length)$/i.test(h.name)) {
+            	if (!/^(:authority|:method|:path|:scheme|content-length|accept|accept-encoding|cache|cache-control)$/i.test(h.name)) {
                 	headers.append(h.name, h.value);
             	}
         	}
     	}
+		headers.append("cache", "no-store");
+		headers.append("cache-control", "no-cache");
     	return headers;
 	}
+
 
     chrome.tabs.query({
         active: true,
@@ -126,7 +129,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     	});
                         const content = await urlResponse.text();
                         fileContent = new TextEncoder().encode(content);
-                        if (!urlResponse.ok) logError(`Fetch failed: ${urlResponse.status}`);
+						if (![200, 304].includes(urlResponse.status)) {
+    						logError(`Fetch failed: ${urlResponse.status}`);
+						}
                     }
                     if (beautify.checked) {
                         switch (extension) {
@@ -166,7 +171,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
                     const blob = await response.blob();
                     fileContent = await blob.arrayBuffer();
-                    if (!response.ok) {
+					if (![200, 304].includes(response.status)) {
     					logError(`Fetch failed (${response.status}) for ${url}`, null);
 					}
 

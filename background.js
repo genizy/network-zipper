@@ -28,7 +28,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             fetch(url, {
                 method: 'GET',
                 headers: { 'Accept': 'application/octet-stream' },
-                mode: 'cors'
+                mode: 'cors',
+                cache: "no-store"
             })
             .then(response => {
                 if (!response.ok) {
