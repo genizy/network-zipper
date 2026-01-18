@@ -40,13 +40,6 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 
 
-    chrome.tabs.query({
-        active: true,
-        currentWindow: true
-    }, function (tabs) {
-        currentTabID = tabs[0].id;
-    });
-    // Fetch and display the version from manifest.json
     fetch(chrome.runtime.getURL('manifest.json')).then(response => response.json()).then(manifest => {
         versionSpan.textContent = `v${manifest.version}`;
     });
@@ -82,7 +75,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
     refreshBtn.addEventListener("click", async function () {
-        chrome.tabs.reload(currentTabID);
+        chrome.devtools.inspectedWindow.eval("location.reload()", (result, isException) => {});
         files = {};
         fileListDiv.innerHTML = "";
     });
@@ -129,7 +122,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     	});
                         const content = await urlResponse.text();
                         fileContent = new TextEncoder().encode(content);
-						if (![200, 304].includes(urlResponse.status)) {
+						if (!(urlResponse.status+"").startsWith("20") && !(urlResponse.status+"").startsWith("30")) {
     						logError(`Fetch failed: ${urlResponse.status}`);
 						}
                     }
@@ -171,7 +164,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
                     const blob = await response.blob();
                     fileContent = await blob.arrayBuffer();
-					if (![200, 304].includes(response.status)) {
+					if (!(response.status+"").startsWith("20") && !(response.status+"").startsWith("30")) {
     					logError(`Fetch failed (${response.status}) for ${url}`, null);
 					}
 
@@ -198,14 +191,15 @@ document.addEventListener("DOMContentLoaded", function () {
             }, function updateCallback(metadata) {
                 downloadStatus.textContent = `Zipping files (${metadata.percent.toFixed(2)}%)..`;
             });
-            let tab = await chrome.tabs.get(currentTabID);
             const link = document.createElement("a");
             link.href = URL.createObjectURL(zipContent);
-            link.download = `${tab.url.hostname ? tab.url.hostname : mainUrl}.zip`;
-            document.body.appendChild(link);
-            downloadStatus.textContent = `Sending download..`;
-            link.click();
-            document.body.removeChild(link);
+			chrome.devtools.inspectedWindow.eval("location.hostname", (result, isException) => {
+            	link.download = `${result ? result : mainUrl}.zip`;
+            	document.body.appendChild(link);
+            	downloadStatus.textContent = `Sending download..`;
+            	link.click();
+            	document.body.removeChild(link);
+			});
         } catch (e) {
             logError("Error generating zip:", e);
         }
