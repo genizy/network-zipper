@@ -115,15 +115,19 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
                     fileContent = new TextEncoder().encode(response);
                     if (fileContent.length === 0 || fileContent + "" === "null") {
-                    	const urlResponse = await fetch(url, {
-                        	headers: fixHeader(files[url].request.headers),
-                        	method: files[url].request.method,
-							body: files[url].request.method !== "GET" ? files[url].request.postData?.text : undefined,
-                    	});
-                        const content = await urlResponse.text();
-                        fileContent = new TextEncoder().encode(content);
-						if (!(urlResponse.status+"").startsWith("20") && !(urlResponse.status+"").startsWith("30")) {
-    						logError(`Fetch failed: ${urlResponse.status}`);
+						try {
+                    		const urlResponse = await fetch(url, {
+                        		headers: fixHeader(files[url].request.headers),
+                        		method: files[url].request.method,
+								body: files[url].request.method !== "GET" ? files[url].request.postData?.text : undefined,
+                    		});
+                        	const content = await urlResponse.text();
+                        	fileContent = new TextEncoder().encode(content);
+							if (!(urlResponse.status+"").startsWith("20") && !(urlResponse.status+"").startsWith("30")) {
+    							logError(`Fetch failed (${urlResponse.status}) for ${url}`, null);
+							}
+						} catch(e) {
+							logError(`Fetch failed (${e}) for ${url}`, null);
 						}
                     }
                     if (beautify.checked) {
@@ -157,15 +161,19 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                     }
                 } else {
-                    const response = await fetch(url, {
-                        headers: fixHeader(files[url].request.headers),
-                        method: files[url].request.method,
-						body: files[url].request.method !== "GET" ? files[url].request.postData?.text : undefined,
-                    });
-                    const blob = await response.blob();
-                    fileContent = await blob.arrayBuffer();
-					if (!(response.status+"").startsWith("20") && !(response.status+"").startsWith("30")) {
-    					logError(`Fetch failed (${response.status}) for ${url}`, null);
+					try {
+                    	const response = await fetch(url, {
+                        	headers: fixHeader(files[url].request.headers),
+                        	method: files[url].request.method,
+							body: files[url].request.method !== "GET" ? files[url].request.postData?.text : undefined,
+                    	});
+                    	const blob = await response.blob();
+                    	fileContent = await blob.arrayBuffer();
+						if (!(response.status+"").startsWith("20") && !(response.status+"").startsWith("30")) {
+    						logError(`Fetch failed (${response.status}) for ${url}`, null);
+						}
+					} catch(e) {
+						logError(`Fetch failed (${e}) for ${url}`, null);
 					}
 
                 }
